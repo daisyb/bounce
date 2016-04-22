@@ -324,3 +324,14 @@ document.getElementById('clear').addEventListener('click', function() {
 document.getElementById('add').addEventListener('click', function() {
 	randBall();
 });
+
+document.getElementById('remove').addEventListener('click', function() {
+	if (svg.hasChildNodes()) {
+		svg.removeChild(svg.lastChild);
+		balls.pop();
+		if (!svg.hasChildNodes()) {
+			clearInterval(intervalId);
+			intervalId = 0;
+		}
+	}
+});
