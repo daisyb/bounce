@@ -7,7 +7,7 @@ const MIN_RAD = 0.005, MAX_RAD = 0.05;
 // minimum and maximum possible velocity of a newly-created ball, expressed as
 // a percentage of the svg's width per TIMESTEP for a ball of radius MAX_RAD
 // (velocity increases quadratically as radius gets smaller than MAX_RAD)
-const MIN_VEL = -0.02, MAX_VEL = 0.02;
+const MIN_VEL = -0.03, MAX_VEL = 0.03;
 
 // array that stores all balls currently on the screen
 var balls = [];
@@ -87,10 +87,10 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 
 			// move the balls so that they are tangent
 			adjustmentFactor = (otherRad + r - deltaMag) / totalMass;
-			pos.x += adjustmentFactor * mass * deltaX;
-			pos.y += adjustmentFactor * mass * deltaY;
-			otherPos.x -= adjustmentFactor * otherMass * deltaX;
-			otherPos.y -= adjustmentFactor * otherMass * deltaY;
+			pos.x += adjustmentFactor * otherMass * deltaX;
+			pos.y += adjustmentFactor * otherMass * deltaY;
+			otherPos.x -= adjustmentFactor * mass * deltaX;
+			otherPos.y -= adjustmentFactor * mass * deltaY;
 
 			// get each ball's velocity component parallel to the normalized
 			// delta vector
