@@ -17,8 +17,8 @@ var balls = [];
 var svg = document.getElementById('board'), svgBBox;
 
 function setViewport() {
-	svg.setAttribute("width", window.innerWidth);
-	svg.setAttribute("height", window.innerHeight);
+	svg.setAttribute('width', window.innerWidth);
+	svg.setAttribute('height', window.innerHeight);
 	svgBBox = svg.getBoundingClientRect();
 	animate();
 };
@@ -28,15 +28,38 @@ setViewport();
 window.addEventListener('resize', setViewport, false);
 
 ////////////////////////////////////////////////////////////////////////////////
+var pointGrabbed = svg.createSVGPoint(), pointDraggedTo = svg.createSVGPoint(),
+curBall;
+
+function moveBall() {
+	pointDraggedTo =
+	pointDraggedTo.matrixTransform(svg.getScreenCTM().inverse());
+	curBall.drag(
+		pointDraggedTo.x - pointGrabbed.x,
+		pointDraggedTo.y - pointGrabbed.y
+		);
+	pointGrabbed.x = pointDraggedTo.x;
+	pointGrabbed.y = pointDraggedTo.y;
+}
+
+function dragBallMouse(evt) {
+	pointDraggedTo.x = evt.clientX;
+	pointDraggedTo.y = evt.clientY;
+	moveBall();
+}
+
+function dragBallTouch(evt) {
+	pointDraggedTo.x = evt.touches[0].clientX;
+	pointDraggedTo.y = evt.touches[0].clientY;
+	moveBall();
+}
+
+function dropBall(evt) {
+	document.onmousemove = null;
+	document.onmouseup = null;
+}
 
 function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
-	var ball = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-	ball.setAttributeNS(null, "cx", _cx);
-	ball.setAttributeNS(null, "cy", _cy);
-	ball.setAttributeNS(null, "r", _r);
-	ball.setAttributeNS(null, "fill", _color);
-	svg.appendChild(ball);
-
 	var r = _r, pos = {x: _cx, y: _cy}, vel = {x: _vx, y: _vy},
 	ballCollisions = [];
 
@@ -78,7 +101,7 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 			deltaX /= deltaMag;
 			deltaY /= deltaMag;
 
-			// the "mass" of a ball is just its radius squared
+			// the 'mass' of a ball is just its radius squared
 			otherRad = balls[ballCollisions[i]].getRad();
 			mass = r * r;
 			otherMass = otherRad;
@@ -139,19 +162,56 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 		pos.x += vel.x * TIMESTEP / 1000.;
 		pos.y += vel.y * TIMESTEP / 1000.;
 
-		ball.setAttributeNS(null, "cx", pos.x);
-		ball.setAttributeNS(null, "cy", pos.y);
+		ball.setAttributeNS(null, 'cx', pos.x);
+		ball.setAttributeNS(null, 'cy', pos.y);
 	}
 
-	return {
+	var drag = function(dx, dy) {
+		pos.x += dx;
+		pos.y += dy;
+		vel.x = dx / TIMESTEP * 1000.;
+		vel.y = dy / TIMESTEP * 1000.;
+	}
+
+	var returnVal = {
 		getPos: getPos,
 		getRad: getRad,
 		getVel: getVel,
 		addCollision: addCollision,
 		collideBalls: collideBalls,
 		collideEdges: collideEdges,
-		move: move
-	}
+		move: move,
+		drag: drag
+	};
+
+	var ball = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+	ball.setAttributeNS(null, 'cx', _cx);
+	ball.setAttributeNS(null, 'cy', _cy);
+	ball.setAttributeNS(null, 'r', _r);
+	ball.setAttributeNS(null, 'fill', _color);
+	svg.appendChild(ball);
+
+	ball.addEventListener('mousedown', function(evt) {
+		pointGrabbed.x = evt.clientX;
+		pointGrabbed.y = evt.clientY;
+		pointGrabbed =
+		pointGrabbed.matrixTransform(svg.getScreenCTM().inverse());
+		curBall = returnVal;
+		document.onmousemove = dragBallMouse;
+		document.onmouseup = dropBall;
+	});
+
+	ball.addEventListener('touchstart', function(evt) {
+		pointGrabbed.x = evt.touches[0].clientX;
+		pointGrabbed.y = evt.touches[0].clientY;
+		pointGrabbed =
+		pointGrabbed.matrixTransform(svg.getScreenCTM().inverse());
+		curBall = returnVal;
+		document.ontouchmove = dragBallTouch;
+		document.ontouchend = dropBall;
+	});
+
+	return returnVal;
 }
 
 // could be made more efficient with a quadtree, but whatevs...
