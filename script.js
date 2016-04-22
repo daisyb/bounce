@@ -7,7 +7,7 @@ const MIN_RAD = 0.005, MAX_RAD = 0.05;
 // minimum and maximum possible velocity of a newly-created ball, expressed as
 // a percentage of the svg's width per TIMESTEP for a ball of radius MAX_RAD
 // (velocity increases quadratically as radius gets smaller than MAX_RAD)
-const MIN_VEL = 0, MAX_VEL = 500;
+const MIN_VEL = -0.02, MAX_VEL = 0.02;
 
 // array that stores all balls currently on the screen
 var balls = [];
@@ -57,8 +57,9 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 	}
 
 	var collideBalls = function() {
-		var i, otherPos, deltaX, deltaY, deltaMag, otherRad, adjustmentMag,
-		otherVel, compI, compF, otherCompI, otherCompF, mass, otherMass;
+		var i, otherPos, deltaX, deltaY, deltaMag, mass, otherMass, totalMass,
+		otherRad, adjustmentFactor, otherVel, compI, compF, otherCompI,
+		otherCompF;
 
 		for (i =  0; i < ballCollisions.length; i++) {
 			// get vector from center of this ball to center of other ball
@@ -77,24 +78,25 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 			deltaX /= deltaMag;
 			deltaY /= deltaMag;
 
-			// move the balls so that they are tangent
+			// the "mass" of a ball is just its radius squared
 			otherRad = balls[ballCollisions[i]].getRad();
-			adjustmentMag = (otherRad + r - deltaMag) / 2;
-			pos.x += adjustmentMag * deltaX;
-			pos.y += adjustmentMag * deltaY;
-			otherPos.x -= adjustmentMag * deltaX;
-			otherPos.y -= adjustmentMag * deltaY;
+			mass = r * r;
+			otherMass = otherRad;
+			otherMass *= otherMass;
+			totalMass = mass + otherMass;
+
+			// move the balls so that they are tangent
+			adjustmentFactor = (otherRad + r - deltaMag) / totalMass;
+			pos.x += adjustmentFactor * mass * deltaX;
+			pos.y += adjustmentFactor * mass * deltaY;
+			otherPos.x -= adjustmentFactor * otherMass * deltaX;
+			otherPos.y -= adjustmentFactor * otherMass * deltaY;
 
 			// get each ball's velocity component parallel to the normalized
 			// delta vector
 			compI = vel.x * deltaX + vel.y * deltaY;
 			otherVel = balls[ballCollisions[i]].getVel();
 			otherCompI = otherVel.x * deltaX + otherVel.y * deltaY;
-
-			// the "mass" of a ball is just its radius squared
-			mass = r * r;
-			otherMass = otherRad;
-			otherMass *= otherMass;
 
 			// calculate resultant parallel velocity components, assuming a
 			// perfectly elastic collision
@@ -201,16 +203,17 @@ function randInt(min, max) {
 }
 
 function randBall() {
-	var radius = randReal(MIN_RAD, MAX_RAD) * svgBBox.width;
-	var vel_factor = radius / MAX_RAD;
-	vel_factor *= 2;
+	var radius = randReal(MIN_RAD, MAX_RAD);
+	var velFactor = radius / MAX_RAD;
+	radius *= svgBBox.width;
+	velFactor *= velFactor;
 	balls.push(makeBall(
 		randReal(radius, svgBBox.width - radius),
 		randReal(radius, svgBBox.height - radius),
 		radius,
 		'#' + randInt(0, 0xffffff).toString(16),
-		randReal(MIN_VEL, MAX_VEL) * svgBBox.width / vel_factor,
-		randReal(MIN_VEL, MAX_VEL) * svgBBox.width / vel_factor
+		randReal(MIN_VEL, MAX_VEL) * svgBBox.width / velFactor,
+		randReal(MIN_VEL, MAX_VEL) * svgBBox.width / velFactor
 		));
 	// Ball radius and ball velocity will be proportional to the svg's width.
 	// Ball velocity will tend to be inversely proportional to the square of its
