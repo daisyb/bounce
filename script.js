@@ -204,6 +204,7 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 		pointGrabbed =
 		pointGrabbed.matrixTransform(svg.getScreenCTM().inverse());
 		curBall = returnVal;
+		dragBallMouse(evt);
 		document.onmousemove = dragBallMouse;
 		document.onmouseup = dropBall;
 	});
@@ -214,6 +215,7 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 		pointGrabbed =
 		pointGrabbed.matrixTransform(svg.getScreenCTM().inverse());
 		curBall = returnVal;
+		dragBallTouch(evt);
 		document.ontouchmove = dragBallTouch;
 		document.ontouchend = dropBall;
 	});
@@ -290,7 +292,7 @@ function randBall() {
 document.getElementById('start').addEventListener('click', function() {
 	if (!intervalId) {
 		if (!svg.hasChildNodes()) {
-			var numBalls = randInt(15, 20);
+			var numBalls = randInt(10, 15);
 			while (numBalls--) {
 				randBall();
 			}
