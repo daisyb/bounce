@@ -7,6 +7,11 @@ svg {
 	display: block;
 } /* To remove the scrollbars */
 
+h1, h3 {
+	font-family: Arial;
+	padding-right: 5px;
+}
+
 aside {
 	position: absolute;
 	color: black;
