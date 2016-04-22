@@ -29,7 +29,7 @@ window.addEventListener('resize', setViewport, false);
 
 ////////////////////////////////////////////////////////////////////////////////
 var pointGrabbed = svg.createSVGPoint(), pointDraggedTo = svg.createSVGPoint(),
-curBall;
+curBall = null;
 
 function moveBall() {
 	pointDraggedTo =
@@ -57,6 +57,7 @@ function dragBallTouch(evt) {
 function dropBall(evt) {
 	document.onmousemove = null;
 	document.onmouseup = null;
+	curBall = null;
 }
 
 function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
@@ -159,18 +160,24 @@ function makeBall(_cx, _cy, _r, _color, _vx, _vy) {
 	}
 
 	var move = function() {
-		pos.x += vel.x * TIMESTEP / 1000.;
-		pos.y += vel.y * TIMESTEP / 1000.;
+		if (this != curBall) {
+			pos.x += vel.x * TIMESTEP / 1000.;
+			pos.y += vel.y * TIMESTEP / 1000.;
 
-		ball.setAttributeNS(null, 'cx', pos.x);
-		ball.setAttributeNS(null, 'cy', pos.y);
+			ball.setAttributeNS(null, 'cx', pos.x);
+			ball.setAttributeNS(null, 'cy', pos.y);
+		}
 	}
 
 	var drag = function(dx, dy) {
 		pos.x += dx;
 		pos.y += dy;
+
 		vel.x = dx / TIMESTEP * 1000.;
 		vel.y = dy / TIMESTEP * 1000.;
+
+		ball.setAttributeNS(null, 'cx', pos.x);
+		ball.setAttributeNS(null, 'cy', pos.y);
 	}
 
 	var returnVal = {
